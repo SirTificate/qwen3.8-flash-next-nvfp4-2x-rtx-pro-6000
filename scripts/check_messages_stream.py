@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Check Anthropic Messages API streams served through an OpenAI-compatible proxy.
 
-Sends N streaming /v1/messages requests with reasoning enabled and validates every
-server-sent event sequence against the Anthropic streaming rules:
+Sends N streaming /v1/messages requests with prompts that make a reasoning model think (the
+script sends no reasoning parameter; it relies on the model thinking by default) and validates
+every server-sent event sequence against the Anthropic streaming rules:
   - a delta belongs to the block that is currently open,
   - the delta type matches the block type (thinking_delta only in thinking blocks, ...),
   - every started block is stopped before the next one starts.
@@ -104,16 +105,23 @@ def main(argv):
         print("set API_KEY in the environment")
         return 2
     bad = 0
+    saw_thinking = False
     for i in range(args.count):
         prompt = PROMPTS[i % len(PROMPTS)].format(a=17 + i, b=3 + i % 7)
         try:
             kinds, errors = check_events(stream(args.base_url, api_key, args.model, prompt,
                                                 args.max_tokens, args.timeout))
-        except (urllib.error.URLError, OSError, ValueError, http.client.HTTPException) as exc:
+        except (urllib.error.URLError, OSError, ValueError, http.client.HTTPException,
+                KeyError, TypeError, AttributeError) as exc:
             kinds, errors = [], [f"{type(exc).__name__}: {exc}"]
+        if "thinking" in kinds:
+            saw_thinking = True
         bad += bool(errors)
         status = "OK  " if not errors else "FAIL"
         print(f"{i + 1:3d} {status} blocks={kinds} {'; '.join(errors)[:200]}")
+    if not saw_thinking:
+        print("WARNING: no stream contained a thinking block, so the reasoning/answer boundary "
+              "was not exercised.")
     print(f"RESULT {args.model}: {bad}/{args.count} streams with violations or errors")
     return 1 if bad else 0
 

@@ -50,10 +50,13 @@ Everything else is unchanged. The full diff against the original:
 ## License
 
 The model and its original chat template are provided under the NVIDIA Open Model License
-(https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/) for the NVIDIA checkpoint and the Qwen Community License 1.0 for the
-base model. The Qwen Community License requires that its notice is included with copies and
-derivative works; it is reproduced below. Note its terms for commercial "Model as a Service"
-and "AI Work Assistant" offerings.
+(https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/, a copy
+is kept at `NVIDIA_OPEN_MODEL_LICENSE.txt` in this directory) for the NVIDIA checkpoint and the
+Qwen Community License 1.0 for the base model. The Qwen Community License requires that its
+notice is included with copies and derivative works; it is reproduced below. Note its terms for
+commercial "Model as a Service" and "AI Work Assistant" offerings.
+
+Licensed by NVIDIA Corporation under the NVIDIA Open Model License
 
 Qwen Community License 1.0
 

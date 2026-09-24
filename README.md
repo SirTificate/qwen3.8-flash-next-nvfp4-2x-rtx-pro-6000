@@ -10,7 +10,7 @@ built-in multi-token prediction (MTP) with 3 speculative tokens.
 
 | | |
 |---|---|
-| GPUs | two GPUs: 2× NVIDIA RTX PRO 6000 Blackwell Workstation Edition, 96 GB each, PCIe, no NVLink |
+| GPUs | 2× NVIDIA RTX PRO 6000 Blackwell Workstation Edition, 96 GB each, PCIe, no NVLink |
 | Driver / CUDA | 580.178.04 / CUDA 13.0 |
 | Container runtime | Docker 29.1.3, Docker Compose 2.40.3, NVIDIA Container Toolkit 1.19.1 (required) |
 | Power limit | 500 W per card |
@@ -29,17 +29,18 @@ git clone https://github.com/SirTificate/qwen3.8-flash-next-nvfp4-2x-rtx-pro-600
 cd qwen3.8-flash-next-nvfp4-2x-rtx-pro-6000
 
 # 1. Download the weights (about 124 GB) into ./hf-cache, pinned to the tested revision
+#    (needs the Hugging Face CLI: pip install -U huggingface_hub)
 HF_HOME=$PWD/hf-cache hf download nvidia/Qwen3.8-Flash-Next-NVFP4 \
   --revision fc694b54fb0174e0913e6adf86691ef85a4ead47
 
-# 2. Start
-export VLLM_API_KEY=$(openssl rand -hex 32)
+# 2. Create an API key (docker compose reads .env automatically) and start
+echo "VLLM_API_KEY=$(openssl rand -hex 32)" > .env
 docker compose up -d
 docker compose logs -f vllm      # weights load in about 2-3 minutes from local disk
 
 # 3. Test
 curl -s http://localhost:8000/v1/chat/completions \
-  -H "Authorization: Bearer $VLLM_API_KEY" -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $(sed -n 's/^VLLM_API_KEY=//p' .env)" -H "Content-Type: application/json" \
   -d '{"model": "qwen3.8-flash-next", "messages": [{"role": "user", "content": "What is 17*23?"}]}'
 ```
 
@@ -53,11 +54,14 @@ cards are enumerated differently. The configuration needs exactly two GPUs.
 | `--quantization modelopt` | The checkpoint is an NVIDIA ModelOpt mixed-precision checkpoint (NVFP4 experts, FP8 MTP experts and per-layer embeddings). |
 | `--tensor-parallel-size 2`, `--enable-expert-parallel` | Split the model across both cards, experts sharded by expert parallelism. |
 | `--speculative-config {"method": "mtp", "num_speculative_tokens": 3}` | Use the checkpoint's built-in MTP module. |
+| `--gpu-memory-utilization 0.95` | Share of each card vLLM may use; the rest of the 96 GB beyond the weights becomes KV cache. |
+| `--max-model-len 262144` | The model's native context length. |
 | `--max-num-seqs 32` | Up to 32 concurrent requests; more are queued. |
 | `--compilation-config ... "cudagraph_capture_sizes": [4, ..., 128]` | CUDA graphs up to 128 tokens per decode step, see pitfall 2. |
+| `"mode": "NONE"`, `"cudagraph_mode": "FULL_DECODE_ONLY"` (in `--compilation-config`) | No torch.compile; full CUDA graphs for decode steps only. Part of the tested configuration. |
 | `--max-num-batched-tokens 4096` | Prefill chunk budget per scheduler step. |
 | `--no-enable-flashinfer-autotune` | Avoids a startup deadlock, see pitfall 1. |
-| `--disable-custom-all-reduce` | vLLM's custom all-reduce crashes during CUDA graph capture on this PCIe setup. |
+| `--disable-custom-all-reduce` | vLLM's custom all-reduce was observed to crash during CUDA graph capture on this PCIe setup; kept in the tested configuration. |
 | `--reasoning-parser qwen3` | Returns the reasoning separately from the answer. |
 | `--tool-call-parser qwen3_coder`, `--enable-auto-tool-choice` | Structured tool calls. |
 | `--chat-template` | The derived template, see pitfall 4. |
@@ -67,8 +71,9 @@ cards are enumerated differently. The configuration needs exactly two GPUs.
 | `VLLM_USE_DEEP_GEMM=0`, `VLLM_MOE_USE_DEEP_GEMM=0` | DeepGEMM disabled. All numbers below were measured this way. |
 | `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True` | Less memory fragmentation. |
 | `CUDA_DEVICE_ORDER=PCI_BUS_ID` | Stable GPU numbering. |
-| `VLLM_ALLOW_LONG_MAX_MODEL_LEN=1` | Part of the tested configuration; not required for the native 262,144 context. |
-| `VLLM_API_KEY` | Required. The compose file refuses to start without it. |
+| `ipc: host` (compose) | Shared memory between the tensor-parallel worker processes. |
+| `VLLM_ALLOW_LONG_MAX_MODEL_LEN=1` | Should not be needed for the native 262,144 context; kept because it is part of the tested configuration. |
+| `VLLM_API_KEY` | Required. The compose file refuses to start without it; the Quick start keeps it in `.env` (git-ignored). |
 
 ## Pitfalls
 
@@ -145,7 +150,9 @@ observed about 200 tok/s for a single stream; that figure is an observation, not
 measurement above.
 
 MTP acceptance per draft position: 84.2 %, 74.6 %, 67.1 %, which gives 3.26 tokens per decode
-step on average.
+step on average. Measured on 2026-09-22 over a mixed set of test prompts (long-context text,
+verbatim copying, tool calls, code edits). Acceptance depends strongly on the content: expect
+less for free-form chat, more for code.
 
 ### Quality
 
