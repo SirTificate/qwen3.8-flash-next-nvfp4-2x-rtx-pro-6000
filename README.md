@@ -12,6 +12,7 @@ built-in multi-token prediction (MTP) with 3 speculative tokens.
 |---|---|
 | GPUs | two GPUs: 2× NVIDIA RTX PRO 6000 Blackwell Workstation Edition, 96 GB each, PCIe, no NVLink |
 | Driver / CUDA | 580.178.04 / CUDA 13.0 |
+| Container runtime | Docker 29.1.3, Docker Compose 2.40.3, NVIDIA Container Toolkit 1.19.1 (required) |
 | Power limit | 500 W per card |
 | Image | `vllm/vllm-openai:v0.30.0@sha256:8a69ffad015f138d7170c4ddc429e230a3bc1c1719f67e14324749df200a4b90` |
 | Model | `nvidia/Qwen3.8-Flash-Next-NVFP4` @ `fc694b54fb0174e0913e6adf86691ef85a4ead47` |
@@ -120,7 +121,7 @@ API_KEY=<proxy key> python3 scripts/check_messages_stream.py \
   --base-url http://<proxy>:<port> --model <model name at the proxy> -n 30
 ```
 
-The last line should read `0/30 streams with violations or errors`.
+The last line should end with `0/30 streams with violations or errors`.
 
 ## Results
 
