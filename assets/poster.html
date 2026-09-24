@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Qwen3.8-Flash-Next on 2× RTX PRO 6000</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Archivo+Black&family=IBM+Plex+Mono:wght@400;600&family=Archivo:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root { --paper:#F6EEDC; --ink:#1E1914; --accent:#D9480F; --accent2:#1F6F78; --soft:#E9DCC2; --muted:#6B5E50; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html, body { width:1200px; height:2354px; background:var(--paper); color:var(--ink); font-family:'Archivo',sans-serif; }
+  .poster { position:relative; width:1200px; height:2354px; padding:56px 64px; overflow:hidden;
+            background: repeating-linear-gradient(90deg, transparent 0 22px, rgba(30,25,20,.025) 22px 23px), var(--paper); }
+  .band { display:flex; justify-content:space-between; font:600 18px 'IBM Plex Mono',monospace; letter-spacing:.18em;
+          text-transform:uppercase; border-top:4px solid var(--ink); border-bottom:4px solid var(--ink); padding:10px 0; }
+  h1 { font-family:'Bungee',sans-serif; font-size:92px; line-height:.95; margin-top:36px; letter-spacing:-.01em; }
+  h1 .on { display:block; font-family:'Archivo Black',sans-serif; font-size:46px; color:var(--accent2); margin-top:12px; }
+  .burst { position:absolute; top:150px; right:40px; width:300px; height:300px; }
+  .burst text { font-family:'Archivo Black',sans-serif; fill:var(--paper); text-anchor:middle; }
+  .hero { display:flex; align-items:baseline; gap:22px; margin-top:44px; }
+  .hero .num { font-family:'Archivo Black',sans-serif; font-size:190px; line-height:.9; color:var(--accent); letter-spacing:-.03em; }
+  .hero .unit { font:800 34px 'Archivo',sans-serif; line-height:1.15; }
+  .hero .unit small { display:block; font:600 22px 'IBM Plex Mono',monospace; color:var(--muted); margin-top:6px; }
+  .sub { margin-top:22px; font:600 22px 'IBM Plex Mono',monospace; }
+  .sub span { display:inline-block; border:2px solid var(--ink); padding:6px 12px; margin:0 8px 10px 0; background:#fff8ea; }
+  .panel { margin-top:34px; border:4px solid var(--ink); background:#fffaf0; padding:24px 28px; box-shadow:10px 10px 0 var(--ink); }
+  .panel h2 { font-family:'Archivo Black',sans-serif; font-size:30px; }
+  .panel .note { font:400 17px 'IBM Plex Mono',monospace; color:var(--muted); margin-top:4px; }
+  svg.chart { display:block; margin-top:14px; }
+  .tiles { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-top:40px; }
+  .tile { border:4px solid var(--ink); background:var(--soft); padding:18px 16px; min-height:170px; }
+  .tile .v { font-family:'Archivo Black',sans-serif; font-size:52px; line-height:1; color:var(--ink); }
+  .tile .v small { font-size:24px; }
+  .tile .l { font:600 17px 'IBM Plex Mono',monospace; margin-top:12px; line-height:1.35; }
+  .quality { margin-top:40px; }
+  .quality h2 { font-family:'Archivo Black',sans-serif; font-size:30px; }
+  .qgrid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:14px; }
+  .q { background:var(--ink); color:var(--paper); padding:14px 16px; }
+  .q b { display:block; font-family:'Archivo Black',sans-serif; font-size:40px; color:#FFB38A; }
+  .q span { font:600 16px 'IBM Plex Mono',monospace; }
+  .box { display:grid; grid-template-columns:1.2fr 1fr; gap:24px; margin-top:40px; align-items:stretch; }
+  .inbox { border:4px dashed var(--ink); padding:20px 24px; }
+  .inbox h2 { font-family:'Archivo Black',sans-serif; font-size:30px; }
+  .inbox li { list-style:none; font:600 20px 'IBM Plex Mono',monospace; margin-top:12px; }
+  .inbox li::before { content:'✚ '; color:var(--accent); }
+  .order { background:var(--accent); color:var(--paper); padding:24px; display:flex; flex-direction:column; justify-content:center; box-shadow:10px 10px 0 var(--ink); }
+  .order .o1 { font-family:'Bungee',sans-serif; font-size:40px; }
+  .order code { display:block; margin-top:14px; background:var(--ink); color:#FFD2B8; font:600 26px 'IBM Plex Mono',monospace; padding:12px 16px; }
+  .fine { position:absolute; left:64px; right:64px; bottom:48px; font:400 14.5px 'IBM Plex Mono',monospace; color:var(--muted); line-height:1.5; border-top:2px solid var(--ink); padding-top:12px; }
+</style>
+</head>
+<body>
+<div class="poster">
+  <div class="band"><span>As seen on your GPUs</span><span>Recipe · 2026-09-22</span></div>
+
+  <h1>QWEN3.8-<br>FLASH-NEXT<span class="on">on 2× RTX PRO 6000</span></h1>
+
+  <svg class="burst" viewBox="0 0 300 300" id="burst">
+    <text x="150" y="132" font-size="30">STOCK</text>
+    <text x="150" y="168" font-size="34">vLLM</text>
+    <text x="150" y="204" font-size="30">v0.30.0!</text>
+  </svg>
+
+  <div class="hero">
+    <div class="num">1,610</div>
+    <div class="unit">tokens/s<small>at 32 parallel streams</small></div>
+  </div>
+  <div class="sub">
+    <span>official NVIDIA NVFP4 checkpoint</span><span>stock vLLM v0.30.0</span><span>TP=2</span><span>MTP n=3</span>
+  </div>
+
+  <div class="panel">
+    <h2>Throughput by parallel streams</h2>
+    <div class="note">streamed, 256 output tokens per request · 1 to 32 streams</div>
+    <svg class="chart" id="total" width="1016" height="330"></svg>
+    <svg class="chart" id="per" width="1016" height="234"></svg>
+  </div>
+
+  <div class="tiles">
+    <div class="tile"><div class="v">142 <small>tok/s</small></div><div class="l">single stream</div></div>
+    <div class="tile"><div class="v">94 <small>tok/s</small></div><div class="l">per stream with 8 parallel streams</div></div>
+    <div class="tile"><div class="v">3.26</div><div class="l">tokens per decode step (MTP acceptance 84 / 75 / 67 %)</div></div>
+    <div class="tile"><div class="v">3.2M</div><div class="l">tokens of KV cache at 262k context</div></div>
+  </div>
+
+  <div class="quality">
+    <h2>Quality, one run each</h2>
+    <div class="qgrid">
+      <div class="q"><b>97.8</b><span>GSM8K</span></div>
+      <div class="q"><b>93.0</b><span>MATH-500</span></div>
+      <div class="q"><b>85.4</b><span>IFEval</span></div>
+      <div class="q"><b>75.2</b><span>TriviaQA</span></div>
+      <div class="q"><b>95.7</b><span>HumanEval+</span></div>
+      <div class="q"><b>79.9</b><span>MBPP+</span></div>
+      <div class="q"><b>87.4</b><span>BFCL Non-Live</span></div>
+      <div class="q"><b>79.2</b><span>BFCL Live</span></div>
+    </div>
+  </div>
+
+  <div class="box">
+    <div class="inbox">
+      <h2>What's in the box</h2>
+      <ul>
+        <li>compose.yaml, every flag explained</li>
+        <li>chat template for Claude Code</li>
+        <li>/v1/messages stream checker</li>
+      </ul>
+    </div>
+    <div class="order">
+      <div class="o1">ORDER NOW!</div>
+      <code>docker compose up</code>
+    </div>
+  </div>
+
+  <div class="fine">
+    Measured 2026-09-22 on 2× RTX PRO 6000 Blackwell (96 GB, PCIe), driver 580.178.04, vLLM v0.30.0,
+    nvidia/Qwen3.8-Flash-Next-NVFP4 @ fc694b5. Throughput: streamed requests with 256 output tokens through an
+    OpenAI-compatible proxy, single run. Quality: lm-evaluation-harness 0.4.11, EvalPlus 0.3.1, BFCL v4; greedy
+    (BFCL 0.001), n=1, reasoning per benchmark as listed in the README. Single run, your mileage may vary.
+  </div>
+</div>
+
+<script>
+const DATA = [[1, 142.1, 145.3], [4, 427.1, 112.8], [8, 721.4, 94.1], [12, 955.6, 82.7], [16, 1142.5, 74.6], [24, 1384.9, 62.1], [32, 1610.4, 55.7]];
+const NS = 'http://www.w3.org/2000/svg';
+function el(parent, tag, attrs, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  parent.appendChild(e); return e;
+}
+function chart(id, col, yMax, yStep, color, label, fmt, bottomMargin) {
+  const svg = document.getElementById(id);
+  const W = +svg.getAttribute('width'), H = +svg.getAttribute('height');
+  const L = 70, R = 30, T = 34, B = bottomMargin || 40;
+  const x = s => L + (s / 32) * (W - L - R);
+  const y = v => T + (1 - v / yMax) * (H - T - B);
+  el(svg, 'text', { x: L, y: 20, 'font-family': 'IBM Plex Mono', 'font-size': 17, 'font-weight': 600, fill: color }, label);
+  for (let v = 0; v <= yMax; v += yStep) {
+    el(svg, 'line', { x1: L, x2: W - R, y1: y(v), y2: y(v), stroke: '#1E1914', 'stroke-opacity': v === 0 ? 1 : .12, 'stroke-width': v === 0 ? 2 : 1 });
+    el(svg, 'text', { x: L - 10, y: y(v) + 5, 'text-anchor': 'end', 'font-family': 'IBM Plex Mono', 'font-size': 14, fill: '#6B5E50' }, v.toLocaleString('en-US'));
+  }
+  const pts = DATA.map(d => [x(d[0]), y(d[col])]);
+  el(svg, 'path', { d: 'M' + pts.map(p => p.join(',')).join('L') + `L${pts[pts.length - 1][0]},${y(0)}L${pts[0][0]},${y(0)}Z`, fill: color, 'fill-opacity': .12 });
+  el(svg, 'path', { d: 'M' + pts.map(p => p.join(',')).join('L'), fill: 'none', stroke: color, 'stroke-width': 5, 'stroke-linejoin': 'round' });
+  DATA.forEach((d, i) => {
+    el(svg, 'circle', { cx: pts[i][0], cy: pts[i][1], r: 7, fill: color, stroke: '#fffaf0', 'stroke-width': 3 });
+    el(svg, 'text', { x: pts[i][0], y: pts[i][1] - 14, 'text-anchor': 'middle', 'font-family': 'Archivo Black', 'font-size': 17, fill: '#1E1914' }, fmt(d[col]));
+    if (id === 'per') el(svg, 'text', { x: pts[i][0], y: y(0) + 28, 'text-anchor': 'middle', 'font-family': 'IBM Plex Mono', 'font-size': 15, fill: '#1E1914' }, d[0]);
+  });
+  if (id === 'per') el(svg, 'text', { x: (L + (W - R)) / 2, y: H - 10, 'text-anchor': 'middle', 'font-family': 'IBM Plex Mono', 'font-size': 13, fill: '#6B5E50' }, 'parallel streams');
+}
+chart('total', 1, 1800, 600, '#D9480F', 'total tokens/s', v => Math.round(v).toLocaleString('en-US'));
+chart('per', 2, 200, 80, '#1F6F78', 'tokens/s per stream (p50)', v => Math.round(v), 64);
+// starburst
+(function () {
+  const svg = document.getElementById('burst'), n = 18, pts = [];
+  for (let i = 0; i < n * 2; i++) {
+    const r = i % 2 ? 110 : 148, a = Math.PI * i / n - Math.PI / 2;
+    pts.push((150 + r * Math.cos(a)).toFixed(1) + ',' + (150 + r * Math.sin(a)).toFixed(1));
+  }
+  const poly = document.createElementNS(NS, 'polygon');
+  poly.setAttribute('points', pts.join(' ')); poly.setAttribute('fill', '#D9480F');
+  poly.setAttribute('stroke', '#1E1914'); poly.setAttribute('stroke-width', '4');
+  svg.insertBefore(poly, svg.firstChild);
+})();
+</script>
+</body>
+</html>
