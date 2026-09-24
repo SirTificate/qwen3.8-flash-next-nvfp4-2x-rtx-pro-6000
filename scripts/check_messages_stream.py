@@ -15,6 +15,7 @@ Exit code: 0 = no violations, 1 = violations or request errors, 2 = usage error.
 Standard library only.
 """
 import argparse
+import http.client
 import json
 import os
 import sys
@@ -108,7 +109,7 @@ def main(argv):
         try:
             kinds, errors = check_events(stream(args.base_url, api_key, args.model, prompt,
                                                 args.max_tokens, args.timeout))
-        except (urllib.error.URLError, OSError, ValueError) as exc:
+        except (urllib.error.URLError, OSError, ValueError, http.client.HTTPException) as exc:
             kinds, errors = [], [f"{type(exc).__name__}: {exc}"]
         bad += bool(errors)
         status = "OK  " if not errors else "FAIL"
