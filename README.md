@@ -4,9 +4,9 @@
 
 A tested vLLM configuration for the official NVIDIA NVFP4 checkpoint of Qwen3.8-Flash-Next on
 two RTX PRO 6000 Blackwell cards, with stock vLLM v0.30.0, tensor parallelism 2 and the model's
-built-in multi-token prediction (MTP) with 3 speculative tokens.
+built-in multi-token prediction (MTP) with 3 speculative tokens and probabilistic drafting.
 
-## Tested setup (2026-09-22)
+## Tested setup (2026-09-26)
 
 | | |
 |---|---|
@@ -17,7 +17,7 @@ built-in multi-token prediction (MTP) with 3 speculative tokens.
 | Image | `vllm/vllm-openai:v0.30.0@sha256:8a69ffad015f138d7170c4ddc429e230a3bc1c1719f67e14324749df200a4b90` |
 | Model | `nvidia/Qwen3.8-Flash-Next-NVFP4` @ `fc694b54fb0174e0913e6adf86691ef85a4ead47` |
 | Weights on GPU | 39.3 GiB per card |
-| KV cache | 3,209,492 tokens (context 262,144, `gpu_memory_utilization` 0.95) |
+| KV cache | 3,203,824 tokens (context 262,144, `gpu_memory_utilization` 0.95) |
 | Host memory | about 65 GB shared memory in use (per-layer embeddings offloaded to the CPU) |
 
 Reasoning, tool calling and image input work with this configuration.
@@ -53,7 +53,7 @@ cards are enumerated differently. The configuration needs exactly two GPUs.
 |---|---|
 | `--quantization modelopt` | The checkpoint is an NVIDIA ModelOpt mixed-precision checkpoint (NVFP4 experts, FP8 MTP experts and per-layer embeddings). |
 | `--tensor-parallel-size 2`, `--enable-expert-parallel` | Split the model across both cards, experts sharded by expert parallelism. |
-| `--speculative-config {"method": "mtp", "num_speculative_tokens": 3}` | Use the checkpoint's built-in MTP module. |
+| `--speculative-config {"method": "mtp", "num_speculative_tokens": 3, "draft_sample_method": "probabilistic"}` | Use the checkpoint's built-in MTP module. `"draft_sample_method": "probabilistic"` samples the draft tokens from the draft model's distribution instead of taking its most likely token. Requests with temperature > 0 accept more draft tokens; the output distribution stays the same (standard rejection sampling, the default). |
 | `--gpu-memory-utilization 0.95` | Share of each card vLLM may use; the rest of the 96 GB beyond the weights becomes KV cache. |
 | `--max-model-len 262144` | The model's native context length. |
 | `--max-num-seqs 32` | Up to 32 concurrent requests; more are queued. |
@@ -133,26 +133,41 @@ The last line should end with `0/30 streams with violations or errors`.
 ### Throughput
 
 Streamed requests with a fixed output length of 256 tokens, sent through an OpenAI-compatible
-proxy. Single run, 2026-09-22.
+proxy. Single run, 2026-09-26.
 
 | Parallel streams | Total tok/s | Per stream p50 tok/s | TTFT p50 ms | ITL p50 ms |
 |---|---|---|---|---|
-| 1 | 142 | 145 | 114 | 6.4 |
-| 4 | 427 | 113 | 168 | 8.2 |
-| 8 | 721 | 94 | 168 | 10.0 |
-| 12 | 956 | 83 | 168 | 11.4 |
-| 16 | 1,143 | 75 | 177 | 12.7 |
-| 24 | 1,385 | 62 | 202 | 15.3 |
-| 32 | 1,610 | 56 | 250 | 16.9 |
+| 1 | 150 | 157 | 119 | 5.9 |
+| 4 | 463 | 120 | 155 | 7.7 |
+| 8 | 738 | 97 | 159 | 9.6 |
+| 12 | 973 | 84 | 172 | 11.2 |
+| 16 | 1,159 | 76 | 221 | 12.3 |
+| 24 | 1,397 | 63 | 201 | 15.1 |
+| 32 | 1,608 | 54 | 223 | 17.5 |
 
-The speed depends on the content. MTP predicts code better than prose. During code generation we
-observed about 200 tok/s for a single stream; that figure is an observation, not part of the
-measurement above.
+The speed depends on the content. MTP predicts code better than prose. Measured directly at the
+server (no proxy), a single stream decoded code at 237 tok/s and free-form prose at 174 tok/s
+(median of 6 requests each, 512 output tokens, temperature 1.0, top_p 0.95, top_k 20).
 
-MTP acceptance per draft position: 84.2 %, 74.6 %, 67.1 %, which gives 3.26 tokens per decode
-step on average. Measured on 2026-09-22 over a mixed set of test prompts (long-context text,
+MTP acceptance per draft position: 83.9 %, 71.4 %, 62.6 %, which gives 3.18 tokens per decode
+step on average. Measured on 2026-09-26 over a mixed set of test prompts (long-context text,
 verbatim copying, tool calls, code edits). Acceptance depends strongly on the content: expect
 less for free-form chat, more for code.
+
+### Prefill
+
+One request at a time, 2026-09-26. Cold: a new prompt without a prefix-cache hit; prefill speed =
+prompt tokens / (TTFT − 114 ms), where 114 ms is the TTFT of a 512-token prompt. Cached: the same
+prompt again, served from the prefix cache.
+
+| Prompt tokens | Cold TTFT ms | Cold prefill tok/s | Cached TTFT ms |
+|---|---|---|---|
+| 4k | 317 | 19,836 | 194 |
+| 8k | 566 | 17,724 | 333 |
+| 16k | 1,079 | 16,990 | 382 |
+| 32k | 2,050 | 16,864 | 357 |
+| 64k | 3,924 | 17,162 | 497 |
+| 128k | 7,990 | 16,644 | 1,154 |
 
 ### Quality
 
@@ -167,7 +182,9 @@ less for free-form chat, more for code.
 | BFCL Non-Live | 87.4 |
 | BFCL Live | 79.2 |
 
-Method: one run per benchmark (n=1), requests through an OpenAI-compatible proxy.
+Method: one run per benchmark (n=1), requests through an OpenAI-compatible proxy, measured on
+2026-09-22 with the same configuration except `draft_sample_method`, which does not change the
+output distribution.
 - lm-evaluation-harness 0.4.11 (chat completions, chat template applied, few-shot as multi-turn):
   GSM8K 5-shot strict-match, MATH-500 0-shot with a `\boxed{}` prompt and boxed-answer extraction,
   IFEval prompt-level strict, TriviaQA 5-shot exact match. Greedy.

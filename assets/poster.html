@@ -51,7 +51,7 @@
 </head>
 <body>
 <div class="poster">
-  <div class="band"><span>As seen on your GPUs</span><span>Recipe · 2026-09-22</span></div>
+  <div class="band"><span>As seen on your GPUs</span><span>Recipe · 2026-09-26</span></div>
 
   <h1>QWEN3.8-<br>FLASH-NEXT<span class="on">on 2× RTX PRO 6000</span></h1>
 
@@ -62,7 +62,7 @@
   </svg>
 
   <div class="hero">
-    <div class="num">1,610</div>
+    <div class="num">1,608</div>
     <div class="unit">tokens/s<small>at 32 parallel streams</small></div>
   </div>
   <div class="sub">
@@ -77,9 +77,9 @@
   </div>
 
   <div class="tiles">
-    <div class="tile"><div class="v">142 <small>tok/s</small></div><div class="l">single stream</div></div>
-    <div class="tile"><div class="v">94 <small>tok/s</small></div><div class="l">per stream with 8 parallel streams</div></div>
-    <div class="tile"><div class="v">3.26</div><div class="l">tokens per decode step (MTP acceptance 84 / 75 / 67 %)</div></div>
+    <div class="tile"><div class="v">150 <small>tok/s</small></div><div class="l">single stream</div></div>
+    <div class="tile"><div class="v">97 <small>tok/s</small></div><div class="l">per stream with 8 parallel streams</div></div>
+    <div class="tile"><div class="v">3.18</div><div class="l">tokens per decode step (MTP acceptance 84 / 71 / 63 %)</div></div>
     <div class="tile"><div class="v">3.2M</div><div class="l">tokens of KV cache at 262k context</div></div>
   </div>
 
@@ -113,15 +113,15 @@
   </div>
 
   <div class="fine">
-    Measured 2026-09-22 on 2× RTX PRO 6000 Blackwell (96 GB, PCIe), driver 580.178.04, vLLM v0.30.0,
+    Measured 2026-09-26 on 2× RTX PRO 6000 Blackwell (96 GB, PCIe), driver 580.178.04, vLLM v0.30.0,
     nvidia/Qwen3.8-Flash-Next-NVFP4 @ fc694b5. Throughput: streamed requests with 256 output tokens through an
-    OpenAI-compatible proxy, single run. Quality: lm-evaluation-harness 0.4.11, EvalPlus 0.3.1, BFCL v4; greedy
+    OpenAI-compatible proxy, single run. Quality (2026-09-22): lm-evaluation-harness 0.4.11, EvalPlus 0.3.1, BFCL v4; greedy
     (BFCL 0.001), n=1, reasoning per benchmark as listed in the README. Single run, your mileage may vary.
   </div>
 </div>
 
 <script>
-const DATA = [[1, 142.1, 145.3], [4, 427.1, 112.8], [8, 721.4, 94.1], [12, 955.6, 82.7], [16, 1142.5, 74.6], [24, 1384.9, 62.1], [32, 1610.4, 55.7]];
+const DATA = [[1, 149.7, 156.7], [4, 462.7, 119.8], [8, 737.8, 97.4], [12, 973.2, 84.1], [16, 1159.4, 75.8], [24, 1396.9, 63.0], [32, 1608.1, 54.3]];
 const NS = 'http://www.w3.org/2000/svg';
 function el(parent, tag, attrs, text) {
   const e = document.createElementNS(NS, tag);

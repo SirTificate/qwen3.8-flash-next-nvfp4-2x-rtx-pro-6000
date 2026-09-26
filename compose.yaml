@@ -43,7 +43,7 @@ services:
       - --tensor-parallel-size
       - "2"
       - --speculative-config
-      - '{"method": "mtp", "num_speculative_tokens": 3}'
+      - '{"method": "mtp", "num_speculative_tokens": 3, "draft_sample_method": "probabilistic"}'
       - --revision
       - fc694b54fb0174e0913e6adf86691ef85a4ead47
       - --code-revision
