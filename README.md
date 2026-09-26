@@ -156,9 +156,11 @@ less for free-form chat, more for code.
 
 ### Prefill
 
-One request at a time, 2026-09-26. Cold: a new prompt without a prefix-cache hit; prefill speed =
-prompt tokens / (TTFT − 114 ms), where 114 ms is the TTFT of a 512-token prompt. Cached: the same
-prompt again, served from the prefix cache.
+One request at a time, streamed with `max_tokens` 1, 2026-09-26. Cold: every request starts with
+a unique prefix, so nothing comes from the prefix cache. Cold prefill speed = prompt tokens / (TTFT −
+overhead), where the overhead is the median TTFT of five short prompts (network, scheduling, one
+decode step); the value is the median of three cold runs. Cached: TTFT when the prompt is already in
+the prefix cache.
 
 | Prompt tokens | Cold TTFT ms | Cold prefill tok/s | Cached TTFT ms |
 |---|---|---|---|
