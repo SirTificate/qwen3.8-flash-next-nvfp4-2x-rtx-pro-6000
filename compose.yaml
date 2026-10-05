@@ -1,8 +1,8 @@
 # Qwen3.8-Flash-Next (official NVIDIA NVFP4 checkpoint) on 2x RTX PRO 6000 Blackwell.
-# Tested with vLLM v0.30.0 on 2026-09-22. See README.md for why each flag is there.
+# Tested with vLLM v0.31.0 on 2026-10-05. See README.md for why each flag is there.
 services:
   vllm:
-    image: vllm/vllm-openai:v0.30.0@sha256:8a69ffad015f138d7170c4ddc429e230a3bc1c1719f67e14324749df200a4b90
+    image: vllm/vllm-openai:v0.31.0@sha256:c1c9f6fd5c109ba7f0546a59f5b2f15fb87f64c77782e90a27b648b42a8e67c3
     entrypoint: ["vllm", "serve"]
     user: "0:0"              # per-layer embedding CPU offload needs root ...
     cap_add: [SYS_PTRACE]    # ... and SYS_PTRACE (CUDA IPC between worker processes)
@@ -15,7 +15,7 @@ services:
     environment:
       HF_HOME: /hf-cache
       VLLM_API_KEY: ${VLLM_API_KEY:?set VLLM_API_KEY before starting}
-      VLLM_PLE_CPU_OFFLOAD: "1"
+      VLLM_ALLREDUCE_USE_FLASHINFER_PCIE_IPC: "1"
       VLLM_USE_DEEP_GEMM: "0"
       VLLM_MOE_USE_DEEP_GEMM: "0"
       PYTORCH_CUDA_ALLOC_CONF: "expandable_segments:True"
@@ -50,6 +50,8 @@ services:
       - fc694b54fb0174e0913e6adf86691ef85a4ead47
       - --tokenizer-revision
       - fc694b54fb0174e0913e6adf86691ef85a4ead47
+      - --engram-config
+      - '{"cpu_offload": true}'
       - --quantization
       - modelopt
       - --reasoning-parser

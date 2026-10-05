@@ -8,8 +8,8 @@
 <style>
   :root { --paper:#F6EEDC; --ink:#1E1914; --accent:#D9480F; --accent2:#1F6F78; --soft:#E9DCC2; --muted:#6B5E50; }
   * { box-sizing:border-box; margin:0; padding:0; }
-  html, body { width:1200px; height:2354px; background:var(--paper); color:var(--ink); font-family:'Archivo',sans-serif; }
-  .poster { position:relative; width:1200px; height:2354px; padding:56px 64px; overflow:hidden;
+  html, body { width:1200px; height:2410px; background:var(--paper); color:var(--ink); font-family:'Archivo',sans-serif; }
+  .poster { position:relative; width:1200px; height:2410px; padding:56px 64px; overflow:hidden;
             background: repeating-linear-gradient(90deg, transparent 0 22px, rgba(30,25,20,.025) 22px 23px), var(--paper); }
   .band { display:flex; justify-content:space-between; font:600 18px 'IBM Plex Mono',monospace; letter-spacing:.18em;
           text-transform:uppercase; border-top:4px solid var(--ink); border-bottom:4px solid var(--ink); padding:10px 0; }
@@ -51,22 +51,22 @@
 </head>
 <body>
 <div class="poster">
-  <div class="band"><span>As seen on your GPUs</span><span>Recipe · 2026-09-26</span></div>
+  <div class="band"><span>As seen on your GPUs</span><span>Recipe · 2026-10-05</span></div>
 
   <h1>QWEN3.8-<br>FLASH-NEXT<span class="on">on 2× RTX PRO 6000</span></h1>
 
   <svg class="burst" viewBox="0 0 300 300" id="burst">
     <text x="150" y="132" font-size="30">STOCK</text>
     <text x="150" y="168" font-size="34">vLLM</text>
-    <text x="150" y="204" font-size="30">v0.30.0!</text>
+    <text x="150" y="204" font-size="30">v0.31.0!</text>
   </svg>
 
   <div class="hero">
-    <div class="num">1,608</div>
+    <div class="num">2,127</div>
     <div class="unit">tokens/s<small>at 32 parallel streams</small></div>
   </div>
   <div class="sub">
-    <span>official NVIDIA NVFP4 checkpoint</span><span>stock vLLM v0.30.0</span><span>TP=2</span><span>MTP n=3</span>
+    <span>NVIDIA NVFP4 checkpoint</span><span>stock vLLM v0.31.0</span><span>TP=2</span><span>MTP n=3</span><span>PCIe all-reduce</span>
   </div>
 
   <div class="panel">
@@ -77,14 +77,14 @@
   </div>
 
   <div class="tiles">
-    <div class="tile"><div class="v">150 <small>tok/s</small></div><div class="l">single stream</div></div>
-    <div class="tile"><div class="v">97 <small>tok/s</small></div><div class="l">per stream with 8 parallel streams</div></div>
-    <div class="tile"><div class="v">3.18</div><div class="l">tokens per decode step (MTP acceptance 84 / 71 / 63 %)</div></div>
+    <div class="tile"><div class="v">183 <small>tok/s</small></div><div class="l">single stream</div></div>
+    <div class="tile"><div class="v">135 <small>tok/s</small></div><div class="l">per stream with 8 parallel streams</div></div>
+    <div class="tile"><div class="v">3.15</div><div class="l">tokens per decode step (MTP acceptance 84 / 70 / 61 %)</div></div>
     <div class="tile"><div class="v">3.2M</div><div class="l">tokens of KV cache at 262k context</div></div>
   </div>
 
   <div class="quality">
-    <h2>Quality, one run each</h2>
+    <h2>Quality, one run each (measured on vLLM v0.30.0)</h2>
     <div class="qgrid">
       <div class="q"><b>97.8</b><span>GSM8K</span></div>
       <div class="q"><b>93.0</b><span>MATH-500</span></div>
@@ -113,15 +113,16 @@
   </div>
 
   <div class="fine">
-    Measured 2026-09-26 on 2× RTX PRO 6000 Blackwell (96 GB, PCIe), driver 580.178.04, vLLM v0.30.0,
+    Measured 2026-10-05 on 2× RTX PRO 6000 Blackwell (96 GB, PCIe), driver 580.178.04, vLLM v0.31.0,
     nvidia/Qwen3.8-Flash-Next-NVFP4 @ fc694b5. Throughput: streamed requests with 256 output tokens through an
-    OpenAI-compatible proxy, single run. Quality (2026-09-22): lm-evaluation-harness 0.4.11, EvalPlus 0.3.1, BFCL v4; greedy
-    (BFCL 0.001), n=1, reasoning per benchmark as listed in the README. Single run, your mileage may vary.
+    OpenAI-compatible proxy, unique prompts, single run with the server in use (16 streams: median of three runs).
+    Quality (2026-09-22, vLLM v0.30.0, same checkpoint): lm-evaluation-harness 0.4.11, EvalPlus 0.3.1, BFCL v4; greedy
+    (BFCL 0.001), n=1, reasoning per benchmark as listed in the README. Your mileage may vary.
   </div>
 </div>
 
 <script>
-const DATA = [[1, 149.7, 156.7], [4, 462.7, 119.8], [8, 737.8, 97.4], [12, 973.2, 84.1], [16, 1159.4, 75.8], [24, 1396.9, 63.0], [32, 1608.1, 54.3]];
+const DATA = [[1, 183.4, 193.8], [4, 572.4, 163.0], [8, 921.8, 134.5], [12, 1206.9, 119.5], [16, 1259.6, 111.1], [24, 1859.4, 92.3], [32, 2127.1, 79.0]];
 const NS = 'http://www.w3.org/2000/svg';
 function el(parent, tag, attrs, text) {
   const e = document.createElementNS(NS, tag);
@@ -150,8 +151,8 @@ function chart(id, col, yMax, yStep, color, label, fmt, bottomMargin) {
   });
   if (id === 'per') el(svg, 'text', { x: (L + (W - R)) / 2, y: H - 10, 'text-anchor': 'middle', 'font-family': 'IBM Plex Mono', 'font-size': 13, fill: '#6B5E50' }, 'parallel streams');
 }
-chart('total', 1, 1800, 600, '#D9480F', 'total tokens/s', v => Math.round(v).toLocaleString('en-US'));
-chart('per', 2, 200, 80, '#1F6F78', 'tokens/s per stream (p50)', v => Math.round(v), 64);
+chart('total', 1, 2400, 600, '#D9480F', 'total tokens/s', v => Math.round(v).toLocaleString('en-US'));
+chart('per', 2, 240, 80, '#1F6F78', 'tokens/s per stream (p50)', v => Math.round(v), 64);
 // starburst
 (function () {
   const svg = document.getElementById('burst'), n = 18, pts = [];
